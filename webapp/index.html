@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PASS</title>
+</head>
+
+<body>
+    <h1>CKPASS HOME</h1>
+    <input type="text" placeholder="message..." id="message">
+    <button onclick="sendMessage()">Send message</button>
+    <br>
+    <input type="text" placeholder="message..." id="messageNotify">
+    <button onclick="pushNotify()">Push notify</button>
+    <button onclick="logout()">Logout</button>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('userId');
+        if (userId) {
+            localStorage.setItem('userId', userId);
+        }
+
+        const accessToken = urlParams.get('access_token');
+        if (accessToken) {
+            localStorage.setItem('access_token', accessToken);
+        }
+
+
+        async function getApi(url = "") {
+            const response = await fetch(url, {
+                method: "GET",
+            });
+            return response.json();
+        }
+
+        function sendMessage() {
+            const message = document.getElementById("message").value;
+            getApi(`http://localhost:3001/line/send-message?to=${localStorage.getItem('userId')}&message=${message}`).then((res) => alert('sent')).catch((err) => alert(err));
+        }
+
+        function pushNotify() {
+            const messageNotify = document.getElementById("messageNotify").value;
+            if (messageNotify) {
+                const accessToken = localStorage.getItem('access_token');
+                getApi(`http://localhost:3001/line/push-noti?access_token=${localStorage.getItem('access_token')}&message_notify=${messageNotify}`).then((res) => alert('sent')).catch((err) => alert(err));
+            }
+        }
+
+        function logout(params) {
+            getApi(`http://localhost:3001/line/revoke-noti?access_token=${localStorage.getItem('access_token')}`).then((res) => location.href = "/webapp/login.html").catch((err) => alert(err));
+        }
+    </script>
+</body>
+
+</html>

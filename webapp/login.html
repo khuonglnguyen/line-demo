@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PASS</title>
+</head>
+
+<body>
+    <h1>LOGIN</h1>
+    <button onclick="loginWithLine()">Login with LINE</button>
+    <script>
+        async function getData(url = "") {
+            const response = await fetch(url, {
+                method: "GET",
+            });
+            return response.json();
+        }
+
+        function loginWithLine() {
+            getData('http://localhost:3001/line/get-url-login').then((res) => {
+                // Open popup
+                const popup = window.open(res.url, 'ssoLogin', 'width=400,height=600,toolbar=no,location=no,menubar=no,status=no');
+
+                // Check if the popup is closed
+                const checkClosed = setInterval(() => {
+                    if (popup.closed) {
+                        // Popup closed, reload the parent page based on the popup URL
+                        window.location.href = popup.location.href;
+                        clearInterval(checkClosed);
+                    }
+                }, 500); // Adjust the interval as needed
+
+                // Add event listener to close popup when processing is done
+                window.addEventListener('message', (event) => {
+                    if (event.origin.includes('http://127.0.0.1:5500/')) {
+                        // Xử lý thông điệp từ popup
+                        if (event.data === 'closePopup') {
+                            popup.close();
+                            clearInterval(checkClosed);
+                        }
+                    }
+                });
+            }).catch((err) =>
+                console.error(err)
+            );
+        }
+    </script>
+</body>
+
+</html>
